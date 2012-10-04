@@ -2,7 +2,7 @@ SC.initialize({ client_id: '96e6f2775568dab677d60e32e82b74d3' });
 
 var Playlist = Backbone.Model.extend({
 	defaults: function() {
-		return {
+	  return {
 			title: "~~ (new playlist) ~~",
 			description: "~~ (about) ~~",
 			tracks: [],
@@ -15,7 +15,7 @@ var TapeCollection = Backbone.Collection.extend({
 	model: Playlist,
 	localStorage: new Store("TapeCollection"),
 	comparator: function(playlist) {
-		return -playlist.get('created');
+		return playlist.get('created');
 	}
 });
 
@@ -23,8 +23,8 @@ var PlaylistView = Backbone.View.extend({
 	tag: "div",
 	
 	events: {
-		"keyup h3": "updateMetadata",
-		"keyup p": "updateMetadata"
+		"keyup h3.title": "updateMetadata",
+		"keyup p.description": "updateMetadata"
 	},
 	
 	initialize: function() {
@@ -32,14 +32,14 @@ var PlaylistView = Backbone.View.extend({
 	},
 	
 	render: function() {
-		this.$el
+		this.$el.addClass("playlist")
 			.append(this.buildTagWithField("<h3/>", "title"))
 			.append(this.buildTagWithField("<p/>", "description"));
 	},
 	
 	buildTagWithField: function(tag, field) {
 		return $(tag, {
-			className: field,
+			"class": field,
 			data: { field: field },
 			text: this.model.get(field),
 			contentEditable: true
