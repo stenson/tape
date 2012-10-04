@@ -5,14 +5,18 @@ var Playlist = Backbone.Model.extend({
 		return {
 			title: "~~ (new playlist) ~~",
 			description: "~~ (about) ~~",
-			tracks: []
+			tracks: [],
+			created: +Date.now()
 		};
 	}
 });
 
 var TapeCollection = Backbone.Collection.extend({
 	model: Playlist,
-	localStorage: new Store("TapeCollection")
+	localStorage: new Store("TapeCollection"),
+	comparator: function(playlist) {
+		return -playlist.get('created');
+	}
 });
 
 var PlaylistView = Backbone.View.extend({
@@ -21,6 +25,16 @@ var PlaylistView = Backbone.View.extend({
 	events: {
 		"keyup h3": "updateMetadata",
 		"keyup p": "updateMetadata"
+	},
+	
+	initialize: function() {
+		this.model.bind("change", function() { this.model.save(); }, this);
+	},
+	
+	render: function() {
+		this.$el
+			.append(this.buildTagWithField("<h3/>", "title"))
+			.append(this.buildTagWithField("<p/>", "description"));
 	},
 	
 	buildTagWithField: function(tag, field) {
@@ -32,21 +46,18 @@ var PlaylistView = Backbone.View.extend({
 		});
 	},
 	
-	render: function() {
-		this.$el
-			.append(this.buildTagWithField("<h3/>", "title"))
-			.append(this.buildTagWithField("<p/>", "description"));
-	},
-	
 	updateMetadata: function(event) {
 		var $target = $(event.target);
 		this.model.set($target.data('field'), $target.text());
-		this.model.save();
 	}
 });
 
 var TapeView = Backbone.View.extend({
-	el: $("#playlists"),
+	el: $("#tape"),
+	
+	events: {
+		"click #add": "createPlaylist"
+	},
 	
 	initialize: function() {
 		this.tapeCollection = new TapeCollection();
@@ -64,11 +75,15 @@ var TapeView = Backbone.View.extend({
 	renderPlaylist: function(playlist) {
 		var view = new PlaylistView({ model: playlist });
 		view.render();
-		this.$el.append(view.$el);
+		this.$("#playlists").append(view.$el);
 	},
 	
 	removePlaylist: function(playlist) {
 		console.log("remove");
+	},
+	
+	createPlaylist: function() {
+		this.tapeCollection.push().save();
 	}
 });
 
