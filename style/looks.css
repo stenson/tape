@@ -29,6 +29,7 @@ h3.title {
 p.description {
   font-style: italic;
 }
-h3.title:hover, p.description:hover {
+h3.editable.title:hover,
+p.editable.description:hover {
   background: lightyellow;
 }

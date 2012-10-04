@@ -15,14 +15,14 @@ var Playlist = Backbone.Model.extend({
     if (tracks) {
       this.trackSet.add(tracks);
     }
-  },
+  }
+});
 
-  render: function() {
-    _.each(this.resultsSet.models, this.renderTrack, this);
-  },
-
-  renderTrack: function() {
-
+var SearchResult = Playlist.extend({
+  initialize: function(tracks, q) {
+    Playlist.prototype.initialize.call(this, tracks);
+    this.set("title", "search for: " + q);
+    this.set("description", "~~ search results ~~");
   }
 });
 
@@ -56,12 +56,17 @@ var PlaylistView = Backbone.View.extend({
       .append(this.buildTagWithField("<p/>", "description"));
   },
 
+  renderTrack: function() {
+
+  },
+
   buildTagWithField: function(tag, field) {
+    var editable = !this.options.preventEditable;
     return $(tag, {
-      "class": field,
+      "class": field + (editable ? " editable" : ""),
       data: { field: field },
       text: this.model.get(field),
-      contentEditable: true
+      contentEditable: !this.options.preventEditable
     });
   },
 
@@ -109,9 +114,10 @@ var TapeView = Backbone.View.extend({
   searchTracks: function(a,b,c) {
     var q = this.$("#track-search input.q").val();
     SC.get('/tracks', { q: q }, _.bind(function(tracks) {
-      var results = new SearchResultView(tracks);
-      results.render();
-      this.$("#results").append(results.$el);
+      var result = new SearchResult(tracks, q);
+      var resultView = new PlaylistView({ model: result, preventEditable: true });
+      resultView.render();
+      this.$("#results").append(resultView.$el);
     }, this));
   }
 });
